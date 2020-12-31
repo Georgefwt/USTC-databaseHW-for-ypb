@@ -5,7 +5,7 @@ from bookmanagement.models import BookObsoInfo
 from bookmanagement.models import BookLeaseInfo
 from django.db import connection, connections
 import datetime
-from bs4 import BeautifulSoup
+
 admin.site.site_header = '书籍管理系统'  # config header
 admin.site.site_title = 'bookmanager'
 
