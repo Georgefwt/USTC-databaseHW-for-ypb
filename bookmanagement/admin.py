@@ -12,9 +12,11 @@ admin.site.site_title = 'bookmanager'
 
 class BookInfoAdmin(admin.ModelAdmin):
     list_display=['bookid','bookname','bookauth','bookstore']
+    search_fields = ['bookname','bookauth']
     
 class BookBuyInfoAdmin(admin.ModelAdmin):
     list_display=['bookinfos','buytime','buynum']
+    search_fields = ['bookinfos__bookname']
     def save_model(self, request, obj, form, change):
         cursor = connection.cursor()  # cursor = connections['default'].cursor()
         cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
@@ -50,7 +52,8 @@ class BookBuyInfoAdmin(admin.ModelAdmin):
             messages.set_level(request, messages.ERROR)
 
 class BookObInfoAdmin(admin.ModelAdmin):
-    list_display=['bookinfos','obtime','obnum']  
+    list_display=['bookinfos','obtime','obnum']
+    search_fields = ['bookinfos__bookname']
     def save_model(self, request, obj, form, change):
         cursor = connection.cursor()
         cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
@@ -83,6 +86,7 @@ class BookObInfoAdmin(admin.ModelAdmin):
 
 class BookLeInfoAdmin(admin.ModelAdmin):
     list_display=['bookinfos','Letime','Lenum','Letarget']
+    search_fields = ['bookinfos__bookname']
     def save_model(self, request, obj, form, change):
         cursor = connection.cursor()
         cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
