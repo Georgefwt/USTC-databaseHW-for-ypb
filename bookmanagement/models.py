@@ -33,9 +33,9 @@ class BookBuyInfo(models.Model):
     bookinfos=models.ForeignKey('BookInfo',on_delete=models.CASCADE)
     buytime=models.DateTimeField(primary_key=True)
     buynum=models.IntegerField()
-
-    def __str__(self):
-        return self.bookinfos.bookname
+    
+    # def __str__(self):
+    #     return self.buytime.__str__
 
 class BookObsoInfo(models.Model):
     bookinfos=models.ForeignKey('BookInfo',on_delete=models.CASCADE)
