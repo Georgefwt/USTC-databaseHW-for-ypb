@@ -4,8 +4,8 @@ from bookmanagement.models import BookBuyInfo
 from bookmanagement.models import BookObsoInfo
 from bookmanagement.models import BookLeaseInfo
 from django.db import connection, connections
+import datetime
 from bs4 import BeautifulSoup
-
 admin.site.site_header = '书籍管理系统'  # config header
 admin.site.site_title = 'bookmanager'
 
@@ -16,29 +16,32 @@ class BookInfoAdmin(admin.ModelAdmin):
 class BookBuyInfoAdmin(admin.ModelAdmin):
     list_display=['bookinfos','buytime','buynum']
     def save_model(self, request, obj, form, change):
-        soup = BeautifulSoup(str(form),'lxml')
-        #print(soup)
-        obsoletenum=int(soup.find_all('input')[2]["value"])
-
-        #print(type(obj))
         cursor = connection.cursor()  # cursor = connections['default'].cursor()
         cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
         curentstore = cursor.fetchone()[0]
-        updatedstore=curentstore+obsoletenum
-        #print(updatedstore)
-        cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,obj.bookinfos.bookname))
-        super().save_model(request, obj, form, change)
+        delta = datetime.timedelta(hours=-8)
+        utctime=obj.buytime+delta
+        print(utctime.strftime("%Y-%m-%d %H:%M:%S"))
+        cursor.execute('select buynum from bookmanagement_bookbuyinfo where buytime=\'%s\';'%utctime.strftime("%Y-%m-%d %H:%M:%S"))
+        cur=cursor.fetchone()
+        if cur != None:
+            print("not none!")
+            updateOrnew = cur[0]
+            updatedstore=curentstore+obj.buynum-updateOrnew
+        else:
+            updatedstore=curentstore+obj.buynum
+        if updatedstore>=0:
+            cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,obj.bookinfos.bookname))
+            super().save_model(request, obj, form, change)
+        else:
+            messages.error(request, "库存不能小于0，无法删除！")
+            messages.set_level(request, messages.ERROR)
     def delete_model(self, request, obj):
         cursor = connection.cursor()  # cursor = connections['default'].cursor()
-        print(obj.buytime.strftime("%Y-%m-%d %H:%M:%S"))
         cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
         currentstore = cursor.fetchone()[0]
-        cursor.execute('select buynum from bookmanagement_bookbuyinfo where buytime=\'%s\';'%obj.buytime.strftime("%Y-%m-%d %H:%M:%S"))
-        deletestore = cursor.fetchone()[0]
-        updatedstore=currentstore-deletestore
-        print(currentstore)
-        print(deletestore)
-        print(updatedstore)
+
+        updatedstore=currentstore-obj.buynum
         if updatedstore>=0:
             cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,obj.bookinfos.bookname))
             super().delete_model(request, obj)
@@ -49,39 +52,65 @@ class BookBuyInfoAdmin(admin.ModelAdmin):
 class BookObInfoAdmin(admin.ModelAdmin):
     list_display=['bookinfos','obtime','obnum']  
     def save_model(self, request, obj, form, change):
-        soup = BeautifulSoup(str(form),'lxml')
-        #print(soup)
-        obsoletenum=int(soup.find_all('input')[2]["value"])
-
-        #print(type(obj))
-        cursor = connection.cursor()  # cursor = connections['default'].cursor()
-        cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%str(obj))
+        cursor = connection.cursor()
+        cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
         curentstore = cursor.fetchone()[0]
-        #print(curentstore)
-        updatedstore=curentstore-obsoletenum
-        if updatedstore >=0:
-            cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,str(obj)))
+        delta = datetime.timedelta(hours=-8)
+        utctime=obj.obtime+delta
+        print(utctime.strftime("%Y-%m-%d %H:%M:%S"))
+        cursor.execute('select obnum from bookmanagement_bookobsoinfo where obtime=\'%s\';'%utctime.strftime("%Y-%m-%d %H:%M:%S"))
+        cur=cursor.fetchone()
+        if cur != None:
+            print("not none!")
+            updateOrnew = cur[0]
+            updatedstore=curentstore-obj.obnum+updateOrnew
+        else:
+            updatedstore=curentstore-obj.obnum
+        if updatedstore>=0:
+            cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,obj.bookinfos.bookname))
             super().save_model(request, obj, form, change)
         else:
             messages.error(request, "库存不足，请重新设置，谢谢！")
             messages.set_level(request, messages.ERROR)
+
+    def delete_model(self, request, obj):
+        cursor = connection.cursor()
+        cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
+        currentstore = cursor.fetchone()[0]
+        updatedstore=currentstore+obj.obnum
+        cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,obj.bookinfos.bookname))
+        super().delete_model(request, obj)
 
 class BookLeInfoAdmin(admin.ModelAdmin):
     list_display=['bookinfos','Letime','Lenum','Letarget']
     def save_model(self, request, obj, form, change):
-        soup = BeautifulSoup(str(form),'lxml')
-        #print(soup)
-        obsoletenum=int(soup.find_all('input')[2]["value"])
-        cursor = connection.cursor()  # cursor = connections['default'].cursor()
-        cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%str(obj))
+        cursor = connection.cursor()
+        cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
         curentstore = cursor.fetchone()[0]
-        updatedstore=curentstore-obsoletenum
-        if updatedstore >=0:
-            cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,str(obj)))
+        delta = datetime.timedelta(hours=-8)
+        utctime=obj.Letime+delta
+        print(utctime.strftime("%Y-%m-%d %H:%M:%S"))
+        cursor.execute('select Lenum from bookmanagement_bookleaseinfo where Letime=\'%s\';'%utctime.strftime("%Y-%m-%d %H:%M:%S"))
+        cur=cursor.fetchone()
+        if cur != None:
+            print("not none!")
+            updateOrnew = cur[0]
+            updatedstore=curentstore-obj.Lenum+updateOrnew
+        else:
+            updatedstore=curentstore-obj.Lenum
+        if updatedstore>=0:
+            cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,obj.bookinfos.bookname))
             super().save_model(request, obj, form, change)
         else:
             messages.error(request, "库存不足，请重新设置，谢谢！")
             messages.set_level(request, messages.ERROR)
+    def delete_model(self, request, obj):
+        cursor = connection.cursor()
+        cursor.execute('select bookstore from bookmanagement_bookinfo where bookname=\'%s\';'%obj.bookinfos.bookname)
+        currentstore = cursor.fetchone()[0]
+        updatedstore=currentstore+obj.Lenum
+        cursor.execute('update bookmanagement_bookinfo set bookstore=%d where bookname =\'%s\';'%(updatedstore,obj.bookinfos.bookname))
+        super().delete_model(request, obj)
 
 admin.site.register(BookInfo,BookInfoAdmin)
 admin.site.register(BookBuyInfo,BookBuyInfoAdmin)

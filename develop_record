@@ -6,3 +6,5 @@ message fixed
         else:
             messages.error(request, "库存不足，请重新设置，谢谢！")
             messages.set_level(request, messages.ERROR)
+
+很多时候花了很长时间去做一种方法，回过来才发现，有更好的。

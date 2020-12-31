@@ -33,7 +33,7 @@ class BookBuyInfo(models.Model):
     bookinfos=models.ForeignKey('BookInfo',on_delete=models.CASCADE)
     buytime=models.DateTimeField(primary_key=True)
     buynum=models.IntegerField()
-    
+
     # def __str__(self):
     #     return self.buytime.__str__
 
@@ -42,8 +42,8 @@ class BookObsoInfo(models.Model):
     obtime=models.DateTimeField(primary_key=True)
     obnum=models.IntegerField()
 
-    def __str__(self):
-        return self.bookinfos.bookname
+    # def __str__(self):
+    #     return self.bookinfos.bookname
 
 class BookLeaseInfo(models.Model):
     bookinfos=models.ForeignKey('BookInfo',on_delete=models.CASCADE)
@@ -51,8 +51,8 @@ class BookLeaseInfo(models.Model):
     Lenum=models.IntegerField()
     Letarget=models.CharField(max_length=10)
 
-    def __str__(self):
-        return self.bookinfos.bookname
+    # def __str__(self):
+    #     return self.bookinfos.bookname
 
 # class BookStorage(models.Model):
 #     bookinfos=models.ForeignKey('BookInfo',on_delete=models.CASCADE)
