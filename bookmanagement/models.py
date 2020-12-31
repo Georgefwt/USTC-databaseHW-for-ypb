@@ -9,10 +9,22 @@ class BookInfo(models.Model) :
     def bookstore(self):
         cursor = connection.cursor()  # cursor = connections['default'].cursor()
         cursor.execute('select sum(buynum) from bookmanagement_bookbuyinfo where bookinfos_id=%d;'%self.bookid)
-        ret = cursor.fetchone()
-        #num=BookBuyInfo.objects.raw('select sum(buynum) from bookmanagement_bookbuyinfo;')
-        return ret
-    #bookstore=models.IntegerField(default=0)
+        ret = cursor.fetchone()[0]
+        cursor.execute('select sum(lenum) from bookmanagement_bookleaseinfo where bookinfos_id=%d;'%self.bookid)
+        ret2 = cursor.fetchone()[0]
+        cursor.execute('select sum(obnum) from bookmanagement_bookobsoinfo where bookinfos_id=%d;'%self.bookid)
+        ret3 = cursor.fetchone()[0]
+        if ret is None:
+            return ()
+        if ret2 is None:
+            if ret3 is None:
+                return (ret,)
+            return (ret-ret3,)
+        if ret3 is None:
+            return (ret-ret2,)
+                #num=BookBuyInfo.objects.raw('select sum(buynum) from bookmanagement_bookbuyinfo;')
+        return (ret-ret2-ret3,)
+
     def __str__(self):
         return self.bookname
 
