@@ -2,3 +2,7 @@ foreign key
 use cursor to make sure store is up-to-date
 use save model
 beautifulsoup
+message fixed
+        else:
+            messages.error(request, "库存不足，请重新设置，谢谢！")
+            messages.set_level(request, messages.ERROR)
