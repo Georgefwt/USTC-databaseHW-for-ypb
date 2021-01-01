@@ -11,7 +11,7 @@ admin.site.site_title = 'bookmanager'
 
 
 class BookInfoAdmin(admin.ModelAdmin):
-    list_display=['bookid','bookname','bookauth','bookstore']
+    list_display=['bookid','bookname','bookauth','bookstore','bookbrought','bookobsoleted','bookLeased']
     search_fields = ['bookname','bookauth']
     
 class BookBuyInfoAdmin(admin.ModelAdmin):
